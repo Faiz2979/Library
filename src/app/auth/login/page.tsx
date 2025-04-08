@@ -2,7 +2,8 @@
 
 import type React from "react"
 
-import { login, loginWithGoogle } from "@/lib/auth"
+import { loginWithGoogle } from "@/lib/auth/googleLogin"
+import { login } from "@/lib/auth/login"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -15,7 +16,8 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await login(email, password)
+      const { token } = await login(email, password)
+      localStorage.setItem("userToken", token)
       alert("Login berhasil!")
       router.push("/books")
     } catch (error: any) {
@@ -25,7 +27,9 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     try {
-      await loginWithGoogle()
+      const {token} = await loginWithGoogle()
+      localStorage.setItem("userToken", token)
+
       alert("Login dengan Google berhasil!")
       router.push("/books")
     } catch (error: any) {

@@ -1,35 +1,43 @@
 "use client"
-import { loginWithGoogle, register } from "@/lib/auth"
+
+import { loginWithGoogle } from "@/lib/auth/googleLogin"
+import { register } from "@/lib/auth/register"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
+const secret = process.env.NEXT_PUBLIC_JWT_SECRET!
+
 export default function RegisterPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [registeredEmail, setEmail] = useState("")
+  const [registeredUsername, setUsername] = useState("")
+  const [registeredPassword, setPassword] = useState("")
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await register(email, password, "user")
+      const registering= await register(registeredEmail, registeredPassword, registeredUsername)
+
       alert("Registrasi berhasil!")
-      router.push("/login")
+      router.push("/auth/login")
     } catch (error: any) {
-      alert(error.message)
+      alert(error.message || "Terjadi kesalahan saat registrasi.")
     }
   }
 
   const handleGoogleRegister = async () => {
     try {
-      await loginWithGoogle()
-      alert("Registrasi dengan Google berhasil!")
-      router.push("/auth/login")
-    } catch (error: any) {
-      alert(error.message)
-    }
-  }
+      const { token } = await loginWithGoogle();
+      localStorage.setItem("userToken", token);
 
+      alert("Registrasi dengan Google berhasil!");
+      router.push("/auth/login");
+    } catch (error: any) {
+      alert(error.message || "Gagal login dengan Google.");
+    }
+  };
+  
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 bg-cover bg-center bg-[url('/images/auth-bg.png')]">
       <div className="absolute inset-0 bg-gradient-to-r from-gray-950/90 to-gray-900/80 backdrop-blur-sm"></div>
@@ -45,9 +53,20 @@ export default function RegisterPage() {
             <div className="space-y-4">
               <div className="relative">
                 <input
+                  type="text"
+                  placeholder="Username"
+                  value={registeredUsername}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-transparent text-white text-sm"
+                  required
+                />
+              </div>
+
+              <div className="relative">
+                <input
                   type="email"
                   placeholder="Email"
-                  value={email}
+                  value={registeredEmail}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-transparent text-white text-sm"
                   required
@@ -58,7 +77,7 @@ export default function RegisterPage() {
                 <input
                   type="password"
                   placeholder="Password"
-                  value={password}
+                  value={registeredPassword}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-transparent text-white text-sm"
                   required

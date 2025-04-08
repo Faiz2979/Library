@@ -1,5 +1,8 @@
 "use client"
 
+import { db } from "@/lib/firebaseConfig"
+import { doc, getDoc } from "firebase/firestore"
+import { decodeJwt } from "jose"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 
@@ -44,22 +47,48 @@ const Navbar = () => {
   const [navbarProps, setNavbarProps] = useState<NavbarProps>([])
 
   useEffect(() => {
-    try {
-      const token = localStorage.getItem("authToken") // Ambil token dari localStorage atau sessionStorage
-      if (token) {
-        const jwtaccount = JSON.parse(atob(token.split(".")[1])) // Decode token
-        const decoded = jwtaccount
+    const fetchUserRole = async (uid: string) => {
+      try {
+        const userDocRef = doc(db, "users", uid as string);
+        const userDoc = await getDoc(userDocRef);
 
-        if (decoded.role === "admin") {
-          setNavbarProps(adminProps) // Jika admin, gunakan navbar admin
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          return userData.role || "user"; // Default ke "user" jika peran tidak ditemukan
         } else {
-          setNavbarProps(props) // Jika user biasa, gunakan navbar user
+          console.error("User document not found.");
+          return "user";
         }
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+        return "user";
       }
-    } catch (error) {
-      console.error("Error decoding token:", error)
-    }
-  }, [])
+    };
+
+    const checkUserRole = async () => {
+      try {
+        const token = localStorage.getItem("userToken");
+        if (token) {
+          const decodedToken = decodeJwt(token);
+          const uid = (decodedToken as { uid: string })?.uid;
+
+          if (uid) {
+            const role = await fetchUserRole(uid);
+            setNavbarProps(role === "admin" ? adminProps : props);
+          } else {
+            setNavbarProps(props);
+          }
+        } else {
+          setNavbarProps(props);
+        }
+      } catch (error) {
+        console.error("Error decoding token:", error);
+        setNavbarProps(props);
+      }
+    };
+
+    checkUserRole();
+  }, [props]);
 
   return (
     <nav className="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 py-4 px-6 sticky top-0 z-50 shadow-md">
