@@ -1,7 +1,7 @@
 "use client"
 
-import { loginWithGoogle } from "@/lib/auth/googleLogin"
-import { register } from "@/lib/auth/register"
+import { loginWithGoogle } from "@/pages/api/auth/googleLogin"
+import { register } from "@/pages/api/auth/register"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -32,7 +32,7 @@ export default function RegisterPage() {
       localStorage.setItem("userToken", token);
 
       alert("Registrasi dengan Google berhasil!");
-      router.push("/auth/login");
+      router.push("/auth/set-username");
     } catch (error: any) {
       alert(error.message || "Gagal login dengan Google.");
     }

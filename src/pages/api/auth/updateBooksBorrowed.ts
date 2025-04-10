@@ -1,5 +1,5 @@
+import { db } from "@/../lib/firebaseConfig"
 import { doc, updateDoc } from "firebase/firestore"
-import { db } from "../firebaseConfig"
 
 export const updateBooksBorrowed = async (
   userId: string,

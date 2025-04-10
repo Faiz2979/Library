@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { db } from "@/lib/firebaseConfig"
-import { doc, getDoc } from "firebase/firestore"
-import { decodeJwt } from "jose"
-import Link from "next/link"
-import { useEffect, useState } from "react"
+import { db } from "@/../lib/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
+import { decodeJwt } from "jose";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 type NavbarProps = {
-  titles: string
-  link: string
-  icons: string
-}[]
+  titles: string;
+  link: string;
+  icons: string;
+}[];
 
 const props: NavbarProps = [
   {
@@ -23,7 +23,7 @@ const props: NavbarProps = [
     link: "/about",
     icons: "about-icon",
   },
-]
+];
 
 const adminProps: NavbarProps = [
   {
@@ -32,8 +32,8 @@ const adminProps: NavbarProps = [
     icons: "",
   },
   {
-    titles: "Dashboard",
-    link: "/dashboard",
+    titles: "Book",
+    link: "/books",
     icons: "dashboard-icon",
   },
   {
@@ -41,31 +41,34 @@ const adminProps: NavbarProps = [
     link: "/manage",
     icons: "manage-books-icon",
   },
-]
+];
 
 const Navbar = () => {
-  const [navbarProps, setNavbarProps] = useState<NavbarProps>([])
+  const [navbarProps, setNavbarProps] = useState<NavbarProps>([]);
+  const [user, setUser] = useState<{ photoURL: string | null }>({ photoURL: null });
 
   useEffect(() => {
-    const fetchUserRole = async (uid: string) => {
+    const fetchUserData = async (uid: string) => {
       try {
-        const userDocRef = doc(db, "users", uid as string);
+        const userDocRef = doc(db, "users", uid);
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          return userData.role || "user"; // Default ke "user" jika peran tidak ditemukan
+          const role = userData.role || "user";
+          setNavbarProps(role === "admin" ? adminProps : props);
+          setUser({ photoURL: userData.photoURL || null });
         } else {
           console.error("User document not found.");
-          return "user";
+          setNavbarProps(props);
         }
       } catch (error) {
-        console.error("Error fetching user role:", error);
-        return "user";
+        console.error("Error fetching user data:", error);
+        setNavbarProps(props);
       }
     };
 
-    const checkUserRole = async () => {
+    const checkUser = async () => {
       try {
         const token = localStorage.getItem("userToken");
         if (token) {
@@ -73,8 +76,7 @@ const Navbar = () => {
           const uid = (decodedToken as { uid: string })?.uid;
 
           if (uid) {
-            const role = await fetchUserRole(uid);
-            setNavbarProps(role === "admin" ? adminProps : props);
+            await fetchUserData(uid);
           } else {
             setNavbarProps(props);
           }
@@ -87,8 +89,8 @@ const Navbar = () => {
       }
     };
 
-    checkUserRole();
-  }, [props]);
+    checkUser();
+  }, []);
 
   return (
     <nav className="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 py-4 px-6 sticky top-0 z-50 shadow-md">
@@ -100,34 +102,39 @@ const Navbar = () => {
 
         {/* Navigation Links */}
         <div className="flex flex-row items-center space-x-2">
-          {navbarProps.map((prop, index) => {
-            return (
-              <div key={index} className="relative group">
-                <Link
-                  href={prop.link || "#"}
-                  className="px-4 py-2 text-white hover:text-sky-400 transition-colors duration-200 font-medium"
-                >
-                  {prop.titles}
-                </Link>
-                <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-sky-500 group-hover:w-full transition-all duration-300"></div>
-              </div>
-            )
-          })}
+          {navbarProps.map((prop, index) => (
+            <div key={index} className="relative group">
+              <Link
+                href={prop.link || "#"}
+                className="px-4 py-2 text-white hover:text-sky-400 transition-colors duration-200 font-medium"
+              >
+                {prop.titles}
+              </Link>
+              <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-sky-500 group-hover:w-full transition-all duration-300"></div>
+            </div>
+          ))}
         </div>
 
-        {/* Login Button */}
+        {/* User Profile or Login Button */}
         <div>
-          <Link
-            href="/auth/login"
-            className="bg-sky-600 hover:bg-sky-700 text-white py-2 px-6 rounded-md transition-colors duration-200 font-medium"
-          >
-            Login
-          </Link>
+          {user.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt="User Profile"
+              className="w-10 h-10 rounded-full border-2 border-sky-500"
+            />
+          ) : (
+            <Link
+              href="/auth/login"
+              className="bg-sky-600 hover:bg-sky-700 text-white py-2 px-6 rounded-md transition-colors duration-200 font-medium"
+            >
+              Login
+            </Link>
+          )}
         </div>
       </div>
     </nav>
-  )
-}
+  );
+};
 
-export { Navbar }
-
+export { Navbar };

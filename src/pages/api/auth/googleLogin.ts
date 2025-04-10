@@ -1,7 +1,7 @@
+import { auth, db } from "@/../lib/firebaseConfig";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { SignJWT } from "jose";
-import { auth, db } from "../firebaseConfig";
 
 const secretKey = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_SECRET!);
 
@@ -35,9 +35,17 @@ export const loginWithGoogle = async (): Promise<{ token: string }> => {
     role = userDoc.data()?.role || "user";
   }
 
-  const token = await new SignJWT({ uid, email, username: displayName, role, photoURL: photoURL || defaultPhoto })
+  const expirationTimeInSeconds = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7;
+
+  const tokenPayload: TokenFormat = {
+    uid,
+    email: email || "",
+    photoURL: photoURL || defaultPhoto,
+    exp: expirationTimeInSeconds,
+  };
+
+  const token = await new SignJWT(tokenPayload)
     .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("7d")
     .sign(secretKey);
 
   return { token };

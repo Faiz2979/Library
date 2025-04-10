@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { loginWithGoogle } from "@/lib/auth/googleLogin"
-import { login } from "@/lib/auth/login"
+import { loginWithGoogle } from "@/pages/api/auth/googleLogin"
+import { login } from "@/pages/api/auth/login"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -31,7 +31,7 @@ export default function LoginPage() {
       localStorage.setItem("userToken", token)
 
       alert("Login dengan Google berhasil!")
-      router.push("/books")
+      router.push("/auth/set-username")
     } catch (error: any) {
       alert(error.message)
     }

@@ -1,7 +1,7 @@
+import { auth, db } from "@/../lib/firebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { SignJWT } from "jose";
-import { auth, db } from "../firebaseConfig";
 
 const secretKey = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_SECRET!);
 
@@ -19,7 +19,7 @@ export const login = async (
 
     const { username, photoURL } = userDoc.data();
 
-    const token = await new SignJWT({ uid: user.uid, email, username, photoURL })
+    const token = await new SignJWT({ uid: user.uid, email, photoURL })
         .setProtectedHeader({ alg: "HS256" })
         .setExpirationTime("7d")
         .sign(secretKey);
