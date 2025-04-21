@@ -1,8 +1,6 @@
 "use client";
 
-import { db } from "@/../lib/firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
-import { decodeJwt } from "jose";
+// import { doc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -14,13 +12,13 @@ type NavbarProps = {
 
 const props: NavbarProps = [
   {
-    titles: "Home",
-    link: "/home",
+    titles: "Leaderboard",
+    link: "/leaderboard",
     icons: "home-icon",
   },
   {
-    titles: "About",
-    link: "/about",
+    titles: "Books",
+    link: "/books",
     icons: "about-icon",
   },
 ];
@@ -48,48 +46,7 @@ const Navbar = () => {
   const [user, setUser] = useState<{ photoURL: string | null }>({ photoURL: null });
 
   useEffect(() => {
-    const fetchUserData = async (uid: string) => {
-      try {
-        const userDocRef = doc(db, "users", uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          const role = userData.role || "user";
-          setNavbarProps(role === "admin" ? adminProps : props);
-          setUser({ photoURL: userData.photoURL || null });
-        } else {
-          console.error("User document not found.");
-          setNavbarProps(props);
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        setNavbarProps(props);
-      }
-    };
-
-    const checkUser = async () => {
-      try {
-        const token = localStorage.getItem("userToken");
-        if (token) {
-          const decodedToken = decodeJwt(token);
-          const uid = (decodedToken as { uid: string })?.uid;
-
-          if (uid) {
-            await fetchUserData(uid);
-          } else {
-            setNavbarProps(props);
-          }
-        } else {
-          setNavbarProps(props);
-        }
-      } catch (error) {
-        console.error("Error decoding token:", error);
-        setNavbarProps(props);
-      }
-    };
-
-    checkUser();
+    setNavbarProps(props);
   }, []);
 
   return (

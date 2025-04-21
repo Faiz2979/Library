@@ -9,9 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "cloudinary": "^2.5.1",
     "dotenv": "^16.4.7",
-    "firebase": "^11.4.0",
     "jose": "^6.0.10",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.482.0",
