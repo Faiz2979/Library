@@ -1,9 +1,6 @@
 "use client"
 
-import type React from "react"
 
-import { loginWithGoogle } from "@/pages/api/auth/googleLogin"
-import { login } from "@/pages/api/auth/login"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -12,30 +9,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const router = useRouter()
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      const { token } = await login(email, password)
-      localStorage.setItem("userToken", token)
-      alert("Login berhasil!")
-      router.push("/books")
-    } catch (error: any) {
-      alert(error.message)
-    }
-  }
-
-  const handleGoogleLogin = async () => {
-    try {
-      const {token} = await loginWithGoogle()
-      localStorage.setItem("userToken", token)
-
-      alert("Login dengan Google berhasil!")
-      router.push("/auth/set-username")
-    } catch (error: any) {
-      alert(error.message)
-    }
-  }
 
   return (
     <div
@@ -54,7 +27,9 @@ export default function LoginPage() {
 
         {/* Card content */}
         <div className="px-6 pb-8 space-y-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form 
+          // onSubmit={handleSubmit} 
+          className="space-y-4">
             <div className="space-y-4">
               {/* Email input */}
               <div className="relative">
@@ -126,7 +101,7 @@ export default function LoginPage() {
 
           {/* Google login button */}
             <button
-                onClick={handleGoogleLogin}
+                // onClick={handleGoogleLogin}
                 className="w-full bg-white text-black border p-2 rounded flex hover:cursor-pointer items-center justify-center space-x-2"
                 >
                 <img src="/icons/Google/google-96.svg" alt="Google" className="w-5 h-5" />

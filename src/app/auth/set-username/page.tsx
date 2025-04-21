@@ -1,10 +1,9 @@
 'use client';
 
-import { checkUsername, setUsername } from "@/pages/api/auth/username";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function SetUsername() {
 
@@ -13,22 +12,6 @@ export default function SetUsername() {
     const [error, setError] = useState("");
     const router = useRouter();
 
-    useEffect(() => {
-        const token = localStorage.getItem("userToken");
-        if (!token) {
-            router.push("/auth/login");
-        }
-    })
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            await checkUsername(registeredUsername);
-            await setUsername(registeredUsername);
-            router.push("/");
-        } catch (err) {
-            setError((err as Error).message);
-        }
-    };
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center p-4 bg-cover bg-center bg-[url('/images/auth-bg.png')]">
@@ -41,7 +24,9 @@ export default function SetUsername() {
                 </div>
 
                 <div className="px-6 pb-8 space-y-6">
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form 
+                    // onSubmit={handleSubmit} 
+                    className="space-y-4">
                         <div className="space-y-4">
                             <div className="relative">
                                 <input

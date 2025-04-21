@@ -1,7 +1,5 @@
 "use client"
 
-import { loginWithGoogle } from "@/pages/api/auth/googleLogin"
-import { register } from "@/pages/api/auth/register"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -14,29 +12,6 @@ export default function RegisterPage() {
   const [registeredPassword, setPassword] = useState("")
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      const registering= await register(registeredEmail, registeredPassword, registeredUsername)
-
-      alert("Registrasi berhasil!")
-      router.push("/auth/login")
-    } catch (error: any) {
-      alert(error.message || "Terjadi kesalahan saat registrasi.")
-    }
-  }
-
-  const handleGoogleRegister = async () => {
-    try {
-      const { token } = await loginWithGoogle();
-      localStorage.setItem("userToken", token);
-
-      alert("Registrasi dengan Google berhasil!");
-      router.push("/auth/set-username");
-    } catch (error: any) {
-      alert(error.message || "Gagal login dengan Google.");
-    }
-  };
   
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 bg-cover bg-center bg-[url('/images/auth-bg.png')]">
@@ -49,7 +24,9 @@ export default function RegisterPage() {
         </div>
 
         <div className="px-6 pb-8 space-y-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form 
+          // onSubmit={handleSubmit} 
+          className="space-y-4">
             <div className="space-y-4">
               <div className="relative">
                 <input
@@ -99,7 +76,7 @@ export default function RegisterPage() {
           </div>
 
           <button
-            onClick={handleGoogleRegister}
+            // onClick={handleGoogleRegister}
             className="w-full bg-white text-black border p-2 rounded flex hover:cursor-pointer items-center justify-center space-x-2"
           >
             <img src="/icons/Google/google-96.svg" alt="Google" className="w-5 h-5" />
