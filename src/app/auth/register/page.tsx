@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { Bounce, toast, ToastContainer } from "react-toastify"
 
 const secret = process.env.NEXT_PUBLIC_JWT_SECRET!
 
@@ -11,7 +12,7 @@ export default function RegisterPage() {
   const [registeredUsername, setUsername] = useState("")
   const [registeredPassword, setPassword] = useState("")
   const router = useRouter()
-
+  const notifySuccess = () => toast("Registered successfully!")
   
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 bg-cover bg-center bg-[url('/images/auth-bg.png')]">
@@ -25,7 +26,7 @@ export default function RegisterPage() {
 
         <div className="px-6 pb-8 space-y-6">
           <form 
-          // onSubmit={handleSubmit} 
+          onSubmit={notifySuccess}
           className="space-y-4">
             <div className="space-y-4">
               <div className="relative">
@@ -88,6 +89,19 @@ export default function RegisterPage() {
           </Link>
         </div>
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        transition={Bounce}
+      />
     </div>
   )
 }

@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Bounce, toast, ToastContainer } from "react-toastify";
 
 export default function SetUsername() {
 
@@ -11,7 +12,7 @@ export default function SetUsername() {
     const [registeredUsername, setRegisteredUsername] = useState("");
     const [error, setError] = useState("");
     const router = useRouter();
-
+    const notifySuccess = () => toast("Username has been Set!");
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center p-4 bg-cover bg-center bg-[url('/images/auth-bg.png')]">
@@ -24,9 +25,9 @@ export default function SetUsername() {
                 </div>
 
                 <div className="px-6 pb-8 space-y-6">
-                    <form 
-                    // onSubmit={handleSubmit} 
-                    className="space-y-4">
+                    <form
+                        onSubmit={notifySuccess} 
+                        className="space-y-4">
                         <div className="space-y-4">
                             <div className="relative">
                                 <input
@@ -53,11 +54,24 @@ export default function SetUsername() {
                 <div className="px-6 pb-8 text-white">
                     <Link href={
                         //back to previous page
-                        document.referrer? document.referrer : "/auth/login"}>
-                    <ArrowLeft></ArrowLeft>
+                        document.referrer ? document.referrer : "/auth/login"}>
+                        <ArrowLeft></ArrowLeft>
                     </Link>
                 </div>
             </div>
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="dark"
+                transition={Bounce}
+            />
         </div>
     )
 }

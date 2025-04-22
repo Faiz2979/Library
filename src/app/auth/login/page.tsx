@@ -1,15 +1,16 @@
 "use client"
 
 
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Bounce, ToastContainer, toast } from 'react-toastify';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const router = useRouter()
-
+  const notifyGoogle = () => toast("Login With Google!");
   return (
     <div
       className="min-h-screen w-full flex items-center justify-center p-4 bg-cover bg-center bg-[url('/images/auth-bg.png')]"
@@ -27,9 +28,9 @@ export default function LoginPage() {
 
         {/* Card content */}
         <div className="px-6 pb-8 space-y-6">
-          <form 
-          // onSubmit={handleSubmit} 
-          className="space-y-4">
+          <form
+            // onSubmit={handleSubmit} 
+            className="space-y-4">
             <div className="space-y-4">
               {/* Email input */}
               <div className="relative">
@@ -100,17 +101,30 @@ export default function LoginPage() {
           </div>
 
           {/* Google login button */}
-            <button
-                // onClick={handleGoogleLogin}
-                className="w-full bg-white text-black border p-2 rounded flex hover:cursor-pointer items-center justify-center space-x-2"
-                >
-                <img src="/icons/Google/google-96.svg" alt="Google" className="w-5 h-5" />
-                <span>Login dengan Google</span>
-            </button>
+          <button
+            onClick={notifyGoogle}
+            className="w-full bg-white text-black border p-2 rounded flex hover:cursor-pointer items-center justify-center space-x-2"
+          >
+            <img src="/icons/Google/google-96.svg" alt="Google" className="w-5 h-5" />
+            <span>Login dengan Google</span>
+          </button>
 
-            <Link href="/auth/register" className="text-sky-400 hover:underline underline-offset-2 decoration-sky-400">Didnt have an account? Register</Link>
+          <Link href="/auth/register" className="text-sky-400 hover:underline underline-offset-2 decoration-sky-400">Tidak punya akun? Register</Link>
         </div>
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        transition={Bounce}
+      />
     </div>
   )
 }
