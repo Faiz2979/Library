@@ -33,6 +33,7 @@ model Book {
   author      String
   isbn        String     @unique
   stock       Int
+  total_borrowed Int        @default(0) // total peminjaman buku ini
   loans       Loan[]
   feedbacks   Feedback[] // semua feedback untuk buku ini
   createdAt   DateTime   @default(now())
