@@ -1,38 +1,64 @@
-import { prisma } from "@/lib/prisma";
-import { NextApiRequest, NextApiResponse } from "next";
+// pages/api/book/return.ts
+import { prisma } from '@/lib/prisma';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-
-export default async function returnBook(request: NextApiRequest, response: NextApiResponse) {
-    
-    try{
-
-        if (request.method !== "POST") {
-            return response.status(405).json({ error: "Method Not Allowed" });
-        }
-        
-    const { bookId, userId } = request.body;
-    
-    if (!bookId || !userId) {
-        return response.status(400).json({ error: "Missing bookId or userId" });
+export default async function returnBook(
+    req: NextApiRequest,
+    res: NextApiResponse
+) {
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method Not Allowed' });
     }
-    const returnBook = await prisma.$transaction(async (tx) => {
-        const loan = await tx.loan.findUnique({
-            where: { id: bookId },
+
+    const { loanId, userId } = req.body as {
+        loanId?: string;
+        userId?: string;
+    };
+
+    if (!loanId || !userId) {
+        return res.status(400).json({ error: 'Missing loanId or userId' });
+    }
+
+    try {
+        const updatedLoan = await prisma.$transaction(async (tx) => {
+            /** 1. Find loan & verify owner */
+            const loan = await tx.loan.findUnique({
+                where: { id: loanId },
+            });
+            if (!loan || loan.userId !== userId || loan.status !== 'BORROWED') {
+                throw new Error('Invalid loan');
+            }
+
+            /** 2. Update loan record */
+            const loanUpdate = tx.loan.update({
+                where: { id: loanId },
+                data: {
+                    status: 'RETURNED',
+                    returnDate: new Date(),
+                },
+                select: {
+                    id: true,
+                    bookId: true,
+                    status: true,
+                    returnDate: true,
+                },
+            });
+
+            /** 3. Restore book stock */
+            const bookUpdate = tx.book.update({
+                where: { id: loan.bookId },
+                data: { stock: { increment: 1 } },
+            });
+
+            // Execute both in the same transaction
+            const loanRes = await loanUpdate;
+            await bookUpdate;
+            return loanRes;
         });
-        if (!loan) throw new Error('Loan not found');
-        
-        await tx.book.update({
-            where: { id: loan.bookId },
-            data: { stock: { increment: 1 } },
-        });
-        
-        return await tx.loan.delete({
-            where: { id: bookId },
-        });
-    });
-    return response.status(200).json(returnBook);
-} catch (error) {
-    console.error(error);
-    return response.status(500).json({ error: 'Internal Server Error' });
-}
+
+        return res.status(200).json({ loan: updatedLoan });
+    } catch (e: any) {
+        console.error('Return error:', e);
+        return res.status(400).json({ error: e.message || 'Return failed' });
+    }
 }
