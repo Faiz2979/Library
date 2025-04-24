@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(USER)
+  loans     Loan[]
+  feedbacks Feedback[] // feedback dari buku yang pernah dipinjam
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Book {
+  id          String     @id @default(uuid())
+  cover       String
+  title       String
+  author      String
+  isbn        String     @unique
+  stock       Int
+  loans       Loan[]
+  feedbacks   Feedback[] // semua feedback untuk buku ini
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Loan {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  book       Book     @relation(fields: [bookId], references: [id])
+  bookId     String
+  loanDate   DateTime @default(now())
+  returnDate DateTime?
+  status     LoanStatus @default(BORROWED)
+  feedback   Feedback?   // opsional, feedback yang diberikan setelah peminjaman
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  rating    Int      @default(5) // 1-5
+  comment   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  book      Book     @relation(fields: [bookId], references: [id])
+  bookId    String
+  loan      Loan     @relation(fields: [loanId], references: [id])
+  loanId    String    @unique // Satu loan hanya bisa punya satu feedback
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum LoanStatus {
+  BORROWED
+  OVERDUE
+  RETURNED
+}
