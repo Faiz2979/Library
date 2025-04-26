@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { AlertCircle, ArrowLeft, Book, CheckCircle, Upload } from "lucide-react"
+import { AlertCircle, ArrowLeft, Book, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -18,9 +18,10 @@ export default function AddBookPage() {
     const [formData, setFormData] = useState({
         title: "",
         author: "",
+        isbn: "",
         category: "",
         totalCopies: 1,
-        coverImage: "",
+        coverFile: null as File | null, // <<=== tambahkan ini
         description: "",
     })
 
@@ -64,14 +65,17 @@ export default function AddBookPage() {
 
         if (!formData.title.trim()) newErrors.title = "Title is required"
         if (!formData.author.trim()) newErrors.author = "Author is required"
+        if (!formData.isbn.trim()) newErrors.isbn = "ISBN is required"
         if (!formData.category) newErrors.category = "Category is required"
         if (!formData.totalCopies || formData.totalCopies < 1) {
             newErrors.totalCopies = "At least 1 copy is required"
         }
+        if (!formData.coverFile) newErrors.coverFile = "Cover image is required"
 
         setErrors(newErrors)
         return Object.keys(newErrors).length === 0
     }
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -82,12 +86,18 @@ export default function AddBookPage() {
         setFormStatus({ type: null, message: "" })
 
         try {
+            const form = new FormData()
+            form.append('title', formData.title)
+            form.append('author', formData.author)
+            form.append('isbn', formData.isbn)
+            form.append('stock', formData.totalCopies.toString())
+            if (formData.coverFile) {
+                form.append('cover', formData.coverFile)
+            }
+
             const response = await fetch("/api/book/add", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(formData),
+                body: form,
             })
 
             const data = await response.json()
@@ -101,17 +111,16 @@ export default function AddBookPage() {
                 message: "Book added successfully!",
             })
 
-            // Reset form after successful submission
             setFormData({
                 title: "",
                 author: "",
+                isbn: "",
                 category: "",
                 totalCopies: 1,
-                coverImage: "",
+                coverFile: null,
                 description: "",
             })
 
-            // Redirect after a short delay
             setTimeout(() => {
                 router.push("/books")
             }, 2000)
@@ -124,6 +133,7 @@ export default function AddBookPage() {
             setIsSubmitting(false)
         }
     }
+
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 py-12">
@@ -146,8 +156,8 @@ export default function AddBookPage() {
                     {formStatus.type && (
                         <div
                             className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${formStatus.type === "success"
-                                    ? "bg-green-900/30 border border-green-800 text-green-300"
-                                    : "bg-red-900/30 border border-red-800 text-red-300"
+                                ? "bg-green-900/30 border border-green-800 text-green-300"
+                                : "bg-red-900/30 border border-red-800 text-red-300"
                                 }`}
                         >
                             {formStatus.type === "success" ? (
@@ -181,6 +191,24 @@ export default function AddBookPage() {
                                 />
                                 {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
                             </div>
+                            {/* ISBN */}
+                            <div className="space-y-2">
+                                <label htmlFor="isbn" className="block text-sm font-medium text-gray-300">
+                                    ISBN <span className="text-sky-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="isbn"
+                                    name="isbn"
+                                    value={formData.isbn}
+                                    onChange={handleChange}
+                                    className={`w-full px-4 py-2.5 bg-gray-800 border ${errors.isbn ? "border-red-500" : "border-gray-700"
+                                        } rounded-md focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-transparent text-white text-sm`}
+                                    placeholder="Enter ISBN number"
+                                />
+                                {errors.isbn && <p className="text-red-500 text-xs mt-1">{errors.isbn}</p>}
+                            </div>
+
 
                             {/* Author */}
                             <div className="space-y-2">
@@ -245,21 +273,30 @@ export default function AddBookPage() {
                         </div>
 
                         {/* Cover Image URL */}
+                        {/* Cover Image Upload */}
                         <div className="space-y-2">
-                            <label htmlFor="coverImage" className="block text-sm font-medium text-gray-300">
-                                Cover Image URL <span className="text-gray-500">(optional)</span>
+                            <label htmlFor="coverFile" className="block text-sm font-medium text-gray-300">
+                                Cover Image <span className="text-sky-500">*</span>
                             </label>
                             <input
-                                type="text"
-                                id="coverImage"
-                                name="coverImage"
-                                value={formData.coverImage}
-                                onChange={handleChange}
+                                type="file"
+                                id="coverFile"
+                                name="coverFile"
+                                accept="image/*"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0]
+                                    if (file) {
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            coverFile: file,
+                                        }))
+                                    }
+                                }}
                                 className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-transparent text-white text-sm"
-                                placeholder="https://example.com/book-cover.jpg"
                             />
-                            <p className="text-gray-500 text-xs">Enter a URL for the book cover image</p>
+                            {errors.coverFile && <p className="text-red-500 text-xs mt-1">{errors.coverFile}</p>}
                         </div>
+
 
                         {/* Description */}
                         <div className="space-y-2">
@@ -330,11 +367,10 @@ export default function AddBookPage() {
 
                 {/* Help Text */}
                 <div className="mt-6 bg-sky-900/20 border border-sky-900/50 rounded-lg p-4 flex items-start gap-3">
-                    <Upload className="h-5 w-5 text-sky-400 mt-0.5 flex-shrink-0" />
                     <div>
-                        <p className="text-sky-400 font-medium text-sm">Need to upload a cover image?</p>
+                        <p className="text-sky-400 font-medium text-sm">Lorem ipsum dolor sit amet</p>
                         <p className="text-gray-400 text-xs mt-1">
-                            You can upload book cover images in the admin dashboard and then use the generated URL here.
+                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Suscipit rem voluptates ratione corporis dignissimos, accusantium, praesentium accusamus numquam, soluta sed earum nostrum laboriosam pariatur quas atque vitae provident ducimus cumque!
                         </p>
                     </div>
                 </div>
